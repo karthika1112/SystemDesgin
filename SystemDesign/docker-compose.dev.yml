@@ -1,0 +1,16 @@
+version: '3.8'
+
+# Development overrides for local hot-reloading
+services:
+  api:
+    volumes:
+      - ./apps/api:/app/apps/api
+      - ./packages:/app/packages
+    command: ["npm", "run", "dev", "-w", "@salestorm/api"]
+    
+  frontend:
+    volumes:
+      - ./apps/web:/app/apps/web
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    command: ["npm", "run", "dev", "-w", "@salestorm/web", "--", "--host", "0.0.0.0"]

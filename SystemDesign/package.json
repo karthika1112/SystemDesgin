@@ -1,0 +1,23 @@
+{
+  "name": "salestorm",
+  "version": "1.0.0",
+  "description": "Flash-sale e-commerce platform",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "dev:api": "npm run dev --workspace=apps/api",
+    "dev:web": "npm run dev --workspace=apps/web"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "eslint": "^9.0.0",
+    "prettier": "^3.2.5"
+  }
+}

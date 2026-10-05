@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: salestorm
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d salestorm"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DATABASE_URL=postgresql://postgres:postgrespassword@postgres:5432/salestorm?schema=public
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - JWT_SECRET=super_secret_hackathon_key
+      - MOCK_PAYMENT_MODE=SUCCESS
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  redisdata:

@@ -1,0 +1,19 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy workspace configurations
+COPY package*.json ./
+COPY apps/api/package.json apps/api/
+COPY apps/web/package.json apps/web/
+COPY packages/ packages/
+
+RUN npm install
+
+# Copy source code
+COPY apps/web/ apps/web/
+
+EXPOSE 5173
+
+# Expose Vite to 0.0.0.0 so it is accessible outside the container
+CMD ["npm", "run", "dev", "-w", "@salestorm/web", "--", "--host", "0.0.0.0"]
